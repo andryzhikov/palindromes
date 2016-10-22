@@ -16,6 +16,16 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
   return out;
 }
 
+int** maxPal;
+const int maxWordLength = 40;
+
+void initDPArray()
+{
+    maxPal = new int * [maxWordLength];
+    for (int i = 0; i < maxWordLength; i++)
+        maxPal[i] = new int[maxWordLength];
+}
+
 int findMaxPalindrome(const vector<bool> & word, bool palFlag = true)
 {
     //vector<vector <int> > maxPal;
@@ -23,21 +33,21 @@ int findMaxPalindrome(const vector<bool> & word, bool palFlag = true)
     //int * maxPal;
     //maxPal = new int[wordLength];
     
-    int** maxPal;
-    maxPal = new int * [wordLength];
-    for (int i = 0; i < wordLength; i++)
-        maxPal[i] = new int[wordLength];
+
+//    maxPal = new int * [wordLength];
+//    for (int i = 0; i < wordLength; i++)
+//        maxPal[i] = new int[wordLength];
     //maxPal.resize(word.size());
     //for (int i = 0; i < maxPal.size(); i++)
     //{
     //    maxPal[i].resize(word.size());
     //}
     
-    for (int j = 0; j < word.size(); j++)
-    {
-        for (int i = j; i < word.size(); i++)
-            maxPal[i][j] = 0;
-    }
+//    for (int j = 0; j < word.size(); j++)
+//    {
+//        for (int i = j; i < word.size(); i++)
+//            maxPal[i][j] = 0;
+//    }
     
     for (int i = 0; i < word.size() - 1; i++)
         maxPal[i][i + 1] = 0;
@@ -56,7 +66,7 @@ int findMaxPalindrome(const vector<bool> & word, bool palFlag = true)
         {
             int j = i + sum;
             if (j >= word.size())
-                continue;
+                break;
             
             if ((word[i] == word[j] && palFlag)
                     || (word[i] != word[j] && !palFlag))
@@ -71,9 +81,9 @@ int findMaxPalindrome(const vector<bool> & word, bool palFlag = true)
     
     int answer = maxPal[0][word.size() - 1];
     
-    for (int i = 0; i < wordLength; i++)
-        delete[] maxPal[i];
-    delete[] maxPal;
+//    for (int i = 0; i < wordLength; i++)
+//        delete[] maxPal[i];
+//    delete[] maxPal;
     
     return answer;
     
@@ -104,6 +114,43 @@ double palFactorForCyclicWord(vector<bool> & word, bool checkPalindromes)
     return maxPalFactor;
 }
 
+typedef vector<bool>::const_iterator bIter;
+
+inline bool lexicographicalCompare(bIter first1, bIter last1,
+              bIter first2, bIter last2)
+{
+      bIter i2 = first2;
+      for (bIter i1 = first1; (i1 != last1) && (i2 != last2); i1++)
+      {
+          if (*i1 < *i2)
+              return true;
+          else if (*i1 == *i2)
+              i2++;
+          else
+              return false;
+      }
+      return false;
+}
+
+bool theWordIsTheLeast(const vector<bool> & word)
+{
+    if (word[0] == 1)
+        return false;
+    
+    bool isTheLeast = true;
+    for (int shift = 1; shift < word.size()/* - 1*/; shift++)
+    {
+        if (!lexicographicalCompare(word.begin(), word.end(),
+                                    word.begin() + shift, word.end()))
+        {
+            isTheLeast = false;
+            break;
+        }
+    }
+    
+    return isTheLeast;
+}
+
 void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
 {
     vector<bool> word;
@@ -126,21 +173,7 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         }
         
         do {
-            //cout << word << endl;
-            vector<bool> rotatedWord = word;
-            
-            bool isTheLeast = true;
-            for (int shift = 0; shift < wordLength - 1; shift++)
-            {
-                rotate(rotatedWord.begin(), rotatedWord.begin() + 1, rotatedWord.end());
-                if (!lexicographical_compare(word.begin(), word.end(),
-                                            rotatedWord.begin(), rotatedWord.end()))
-                {
-                    isTheLeast = false;
-                    break;
-                }
-            }
-            if (isTheLeast)
+            if (theWordIsTheLeast(word))
             {
                 minPalFactor = min(minPalFactor, palFactorForCyclicWord(word, checkPalindromes));
             }
@@ -195,10 +228,12 @@ void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
 
 int main()
 {
+    initDPArray();
+    
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 28, checkPalindromes);
+    checkBruteforce(2, 22, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     return 0;
