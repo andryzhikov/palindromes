@@ -17,7 +17,7 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
 }
 
 int** maxPal;
-const int maxWordLength = 40;
+const int maxWordLength = 80;
 
 void initDPArray()
 {
@@ -26,67 +26,92 @@ void initDPArray()
         maxPal[i] = new int[maxWordLength];
 }
 
-int findMaxPalindrome(const vector<bool> & word, bool palFlag = true)
+int findMaxAntiPalindrome(const vector<bool> & word)
 {
-    //vector<vector <int> > maxPal;
-    int wordLength = word.size();
-    //int * maxPal;
-    //maxPal = new int[wordLength];
+    vector<bool> doubledWord;
+    doubledWord.insert(doubledWord.end(), word.begin(), word.end());
+    doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     
-
-//    maxPal = new int * [wordLength];
-//    for (int i = 0; i < wordLength; i++)
-//        maxPal[i] = new int[wordLength];
-    //maxPal.resize(word.size());
-    //for (int i = 0; i < maxPal.size(); i++)
-    //{
-    //    maxPal[i].resize(word.size());
-    //}
-    
-//    for (int j = 0; j < word.size(); j++)
-//    {
-//        for (int i = j; i < word.size(); i++)
-//            maxPal[i][j] = 0;
-//    }
-    
-    for (int i = 0; i < word.size() - 1; i++)
+    for (int i = 0; i < doubledWord.size() - 1; i++)
         maxPal[i][i + 1] = 0;
     
-    for (int i = 0; i < word.size(); i++)
+    for (int i = 0; i < doubledWord.size(); i++)
     {
-        if (palFlag)
-            maxPal[i][i] = 1;
-        else
             maxPal[i][i] = 0;
     }
     
     for (int sum = 1; sum < word.size(); sum++)
     {
-        for (int i = 0; i < word.size(); i++)
+        for (int i = 0; i < doubledWord.size(); i++)
         {
             int j = i + sum;
-            if (j >= word.size())
+            if (j >= doubledWord.size())
                 break;
             
-            if ((word[i] == word[j] && palFlag)
-                    || (word[i] != word[j] && !palFlag))
+            if ((doubledWord[i] != doubledWord[j]))
                 maxPal[i][j] = maxPal[i+1][j-1] + 2;
             else
             {
                 maxPal[i][j] = max(maxPal[i + 1][j], maxPal[i][j - 1]);
             }
-            
         }
     }
     
-    int answer = maxPal[0][word.size() - 1];
-    
-//    for (int i = 0; i < wordLength; i++)
-//        delete[] maxPal[i];
-//    delete[] maxPal;
-    
+    int answer = 0;
+    for (int iStart = 0; iStart < word.size(); iStart++)
+    {
+        answer = max(answer, maxPal[iStart][iStart + word.size() - 1]);
+    }
     return answer;
+}
+
+int findMaxPalindrome(const vector<bool> & word)
+{
+    vector<bool> doubledWord;
+    doubledWord.insert(doubledWord.end(), word.begin(), word.end());
+    doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     
+    for (int i = 0; i < doubledWord.size() - 1; i++)
+        maxPal[i][i + 1] = 0;
+    
+    for (int i = 0; i < doubledWord.size(); i++)
+    {
+        maxPal[i][i] = 1;
+    }
+    
+    for (int sum = 1; sum < word.size(); sum++)
+    {
+        for (int i = 0; i < doubledWord.size(); i++)
+        {
+            int j = i + sum;
+            if (j >= doubledWord.size())
+                break;
+            
+            if ((doubledWord[i] == doubledWord[j]))
+                maxPal[i][j] = maxPal[i+1][j-1] + 2;
+            else
+            {
+                maxPal[i][j] = max(maxPal[i + 1][j], maxPal[i][j - 1]);
+            }
+        }
+    }
+    
+//    cout << word << endl;
+//    for (int i = 0; i < doubledWord.size(); i++)
+//    {
+//        for (int j = 0; j < doubledWord.size(); j++)
+//        {
+//            cout << maxPal[i][j] << " ";
+//        }
+//        cout << endl;
+//    }
+    
+    int answer = 0;
+    for (int iStart = 0; iStart < word.size(); iStart++)
+    {
+        answer = max(answer, maxPal[iStart][iStart + word.size() - 1]);
+    }
+    return answer;
 }
 
 double get_wall_time(){
@@ -100,18 +125,13 @@ double get_wall_time(){
 
 double palFactorForCyclicWord(vector<bool> & word, bool checkPalindromes)
 {
-    double maxPalFactor = 0;
-    for (int shift = 0; shift < word.size(); shift++)
-    {
-        int palindromeLength = findMaxPalindrome(word, checkPalindromes);
-        maxPalFactor = max((double)palindromeLength / word.size(), maxPalFactor);
-        rotate(word.begin(), word.begin() + 1, word.end());
-    }
-    //cout << word << " " << maxPalFactor << endl;
-//    if (maxPalFactor < 0.72)
-//        cout << word << endl;
+    int palindromeLength;
+    if (checkPalindromes)
+        palindromeLength = findMaxPalindrome(word);
+    else
+        palindromeLength = findMaxAntiPalindrome(word);
     
-    return maxPalFactor;
+    return (double)palindromeLength / word.size();
 }
 
 typedef vector<bool>::const_iterator bIter;
@@ -129,7 +149,7 @@ inline bool lexicographicalCompare(bIter first1, bIter last1,
           else
               return false;
       }
-      return false;
+      return true;
 }
 
 bool theWordIsTheLeast(const vector<bool> & word)
@@ -138,7 +158,7 @@ bool theWordIsTheLeast(const vector<bool> & word)
         return false;
     
     bool isTheLeast = true;
-    for (int shift = 1; shift < word.size()/* - 1*/; shift++)
+    for (int shift = 1; shift < word.size(); shift++)
     {
         if (!lexicographicalCompare(word.begin(), word.end(),
                                     word.begin() + shift, word.end()))
@@ -156,8 +176,6 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
     vector<bool> word;
     for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
-        //time_t timer1;
-        //time(&timer1);
         double time1 = get_wall_time();
         
         double minPalFactor = 1;
@@ -180,18 +198,12 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         } while (next_permutation(word.begin(), word.end()));
         
         cout << wordLength << " " << minPalFactor << endl;
-        //time_t timer2;
-        //time(&timer2);
         double time2 = get_wall_time();
-        //double seconds = difftime(timer2, timer1);
         double seconds = time2 - time1;
         
         cout << "took " << seconds << " seconds" << endl;
         
     }
-    
-    //cout << "minPalFactor =" << " " << minPalFactor << endl;
-    
 }
 
 void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
@@ -233,7 +245,7 @@ int main()
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 22, checkPalindromes);
+    checkBruteforce(2, 30, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     return 0;
