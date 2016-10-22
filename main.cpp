@@ -127,7 +127,23 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         
         do {
             //cout << word << endl;
-            minPalFactor = min(minPalFactor, palFactorForCyclicWord(word, checkPalindromes));
+            vector<bool> rotatedWord = word;
+            
+            bool isTheLeast = true;
+            for (int shift = 0; shift < wordLength - 1; shift++)
+            {
+                rotate(rotatedWord.begin(), rotatedWord.begin() + 1, rotatedWord.end());
+                if (!lexicographical_compare(word.begin(), word.end(),
+                                            rotatedWord.begin(), rotatedWord.end()))
+                {
+                    isTheLeast = false;
+                    break;
+                }
+            }
+            if (isTheLeast)
+            {
+                minPalFactor = min(minPalFactor, palFactorForCyclicWord(word, checkPalindromes));
+            }
         } while (next_permutation(word.begin(), word.end()));
         
         cout << wordLength << " " << minPalFactor << endl;
@@ -152,7 +168,7 @@ void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
     
     int epsilon = 0;
     
-    srand(278);
+    srand(218);
     double minFactor = 1;
     int numChecked = 0;
     for (int i = 0; i < numTries; i++)
@@ -182,9 +198,9 @@ int main()
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    //checkBruteforce(2, 26, checkPalindromes);
+    checkBruteforce(2, 28, checkPalindromes);
     
-    checkAtRandom(100, 10000, checkPalindromes);
+    //checkAtRandom(100, 10000, checkPalindromes);
     return 0;
 }
 
