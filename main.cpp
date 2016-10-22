@@ -88,13 +88,26 @@ double get_wall_time(){
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
-int main()
+double palFactorForCyclicWord(vector<bool> & word, bool checkPalindromes)
 {
-    int maxWordLength = 26;
+    double maxPalFactor = 0;
+    for (int shift = 0; shift < word.size(); shift++)
+    {
+        int palindromeLength = findMaxPalindrome(word, checkPalindromes);
+        maxPalFactor = max((double)palindromeLength / word.size(), maxPalFactor);
+        rotate(word.begin(), word.begin() + 1, word.end());
+    }
+    //cout << word << " " << maxPalFactor << endl;
+//    if (maxPalFactor < 0.72)
+//        cout << word << endl;
+    
+    return maxPalFactor;
+}
+
+void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
+{
     vector<bool> word;
-    
-    
-    for (int wordLength = 2; wordLength <= maxWordLength; wordLength += 2)
+    for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
         //time_t timer1;
         //time(&timer1);
@@ -114,15 +127,7 @@ int main()
         
         do {
             //cout << word << endl;
-            double maxPalFactor = 0;
-            for (int shift = 0; shift <= wordLength; shift++)
-            {
-                int palindromeLength = findMaxPalindrome(word, false);
-                maxPalFactor = max((double)palindromeLength / word.size(), maxPalFactor);
-                rotate(word.begin(), word.begin() + 1, word.end());
-            }
-            //rotate(word.begin(), word.begin() + 1, word.end());
-            minPalFactor = min(minPalFactor, maxPalFactor);
+            minPalFactor = min(minPalFactor, palFactorForCyclicWord(word, checkPalindromes));
         } while (next_permutation(word.begin(), word.end()));
         
         cout << wordLength << " " << minPalFactor << endl;
@@ -137,6 +142,49 @@ int main()
     }
     
     //cout << "minPalFactor =" << " " << minPalFactor << endl;
+    
+}
+
+void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
+{
+    vector<bool> word;
+    word.resize(wordLength);
+    
+    int epsilon = 0;
+    
+    srand(278);
+    double minFactor = 1;
+    int numChecked = 0;
+    for (int i = 0; i < numTries; i++)
+    {
+        int numOnes = 0;
+        for (int iLetter = 0; iLetter < wordLength; iLetter++)
+        {
+            word[iLetter] = rand() % 2;
+            numOnes += word[iLetter];
+        }
+        
+        if ((numOnes >= wordLength / 2 - epsilon)
+            && numOnes <= wordLength / 2 + epsilon)
+        {
+            numChecked++;
+            
+            double f = palFactorForCyclicWord(word, checkPalindromes);
+            minFactor = min(minFactor, f);
+        }
+    }
+    
+    cout << numChecked << " " << minFactor << endl;
+}
+
+int main()
+{
+    bool checkPalindromes = false;
+    cout << "checkPalindromes = " << checkPalindromes << endl;
+    
+    //checkBruteforce(2, 26, checkPalindromes);
+    
+    checkAtRandom(100, 10000, checkPalindromes);
     return 0;
 }
 
