@@ -96,16 +96,6 @@ int findMaxPalindrome(const vector<bool> & word)
         }
     }
     
-//    cout << word << endl;
-//    for (int i = 0; i < doubledWord.size(); i++)
-//    {
-//        for (int j = 0; j < doubledWord.size(); j++)
-//        {
-//            cout << maxPal[i][j] << " ";
-//        }
-//        cout << endl;
-//    }
-    
     int answer = 0;
     for (int iStart = 0; iStart < word.size(); iStart++)
     {
@@ -123,17 +113,6 @@ double get_wall_time(){
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
-double palFactorForCyclicWord(vector<bool> & word, bool checkPalindromes)
-{
-    int palindromeLength;
-    if (checkPalindromes)
-        palindromeLength = findMaxPalindrome(word);
-    else
-        palindromeLength = findMaxAntiPalindrome(word);
-    
-    return (double)palindromeLength / word.size();
-}
-
 typedef vector<bool>::const_iterator bIter;
 
 inline bool lexicographicalCompare(bIter first1, bIter last1,
@@ -149,7 +128,10 @@ inline bool lexicographicalCompare(bIter first1, bIter last1,
           else
               return false;
       }
-      return true;
+      // the word is periodic
+      // a periodic word can not be a minimum counterexample
+      // (for both palindromes and antipalindromes)
+      return false;
 }
 
 bool theWordIsTheLeast(const vector<bool> & word)
@@ -157,18 +139,16 @@ bool theWordIsTheLeast(const vector<bool> & word)
     if (word[0] == 1)
         return false;
     
-    bool isTheLeast = true;
     for (int shift = 1; shift < word.size(); shift++)
     {
         if (!lexicographicalCompare(word.begin(), word.end(),
                                     word.begin() + shift, word.end()))
         {
-            isTheLeast = false;
-            break;
+            return false;
         }
     }
     
-    return isTheLeast;
+    return true;
 }
 
 void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
@@ -193,7 +173,14 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         do {
             if (theWordIsTheLeast(word))
             {
-                minPalFactor = min(minPalFactor, palFactorForCyclicWord(word, checkPalindromes));
+                int palindromeLength;
+                
+                if (checkPalindromes)
+                    palindromeLength = findMaxPalindrome(word);
+                else
+                    palindromeLength = findMaxAntiPalindrome(word);
+                
+                minPalFactor = min(minPalFactor, (double)palindromeLength / word.size());
             }
         } while (next_permutation(word.begin(), word.end()));
         
@@ -230,7 +217,14 @@ void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
         {
             numChecked++;
             
-            double f = palFactorForCyclicWord(word, checkPalindromes);
+            int palindromeLength;
+            
+            if (checkPalindromes)
+                palindromeLength = findMaxPalindrome(word);
+            else
+                palindromeLength = findMaxAntiPalindrome(word);
+            
+            double f = (double)palindromeLength / word.size();
             minFactor = min(minFactor, f);
         }
     }
@@ -245,7 +239,7 @@ int main()
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 30, checkPalindromes);
+    checkBruteforce(2, 24, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     return 0;
