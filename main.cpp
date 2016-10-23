@@ -26,6 +26,13 @@ void initDPArray()
         maxPal[i] = new int[maxWordLength];
 }
 
+void deleteDPArray()
+{
+    for (int i = 0; i < maxWordLength; i++)
+        delete[] maxPal[i];
+    delete[] maxPal;
+}
+
 int findMaxAntiPalindrome(const vector<bool> & word)
 {
     vector<bool> doubledWord;
@@ -191,11 +198,30 @@ bool theWordIsTheLeast(const vector<bool> & word)
 void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
 {
     vector<bool> word;
+    
+    vector<int> minPalForLength;
+    minPalForLength.push_back(0);
+    
     for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
+        double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2] / wordLength);
+        double conjFactor;
+        if (checkPalindromes)
+            conjFactor = (double)3/4;
+        else
+            conjFactor = (double)2/3;
+        
+        if (estimatedMinPalLength >= conjFactor)
+        {
+            cout << wordLength << " skipped with factor at least" << " " 
+                 << (double)minPalForLength[(wordLength - minLength) / 2] / wordLength << endl;
+            minPalForLength.push_back(minPalForLength[(wordLength - minLength) / 2]);
+            continue;
+        }
+        
         double time1 = get_wall_time();
         
-        double minPalFactor = 1;
+        int minPalLength = 100;
         word.resize(wordLength);
         
         for (int iLetter = 0; iLetter < wordLength / 2; iLetter++)
@@ -217,16 +243,16 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
                 else
                     palindromeLength = findMaxAntiPalindrome(word);
                 
-                minPalFactor = min(minPalFactor, (double)palindromeLength / word.size());
+                minPalLength = min(minPalLength, palindromeLength);
             }
         } while (next_permutation(word.begin(), word.end()));
         
-        cout << wordLength << " " << minPalFactor << endl;
+        minPalForLength.push_back(minPalLength);
+        cout << wordLength << " " << (double)minPalLength / word.size() << " " << minPalLength << endl;
         double time2 = get_wall_time();
         double seconds = time2 - time1;
         
         cout << "took " << seconds << " seconds" << endl;
-        
     }
 }
 
@@ -238,7 +264,7 @@ void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
     int epsilon = 0;
     
     srand(218);
-    double minFactor = 1;
+    int minLength = 100;
     int numChecked = 0;
     for (int i = 0; i < numTries; i++)
     {
@@ -261,12 +287,11 @@ void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
             else
                 palindromeLength = findMaxAntiPalindrome(word);
             
-            double f = (double)palindromeLength / word.size();
-            minFactor = min(minFactor, f);
+            minLength = min(minLength, palindromeLength);
         }
     }
     
-    cout << numChecked << " " << minFactor << endl;
+    cout << numChecked << " " << (double)minLength / word.size() << " " << minLength << endl;
 }
 
 int main()
@@ -276,9 +301,11 @@ int main()
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 24, checkPalindromes);
+    checkBruteforce(2, 30, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
+    
+    deleteDPArray();
     return 0;
 }
 
