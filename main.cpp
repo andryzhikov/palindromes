@@ -175,7 +175,8 @@ inline bool lexicographicalCompare(bIter first1, bIter last1,
       // the word is periodic
       // a periodic word can not be a minimum counterexample
       // (for both palindromes and antipalindromes)
-      return false;
+      // but causes problems with estimation
+      return true;
 }
 
 bool theWordIsTheLeast(const vector<bool> & word)
@@ -197,6 +198,8 @@ bool theWordIsTheLeast(const vector<bool> & word)
 
 void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
 {
+    double totalTime1 = get_wall_time();
+    
     vector<bool> word;
     
     vector<int> minPalForLength;
@@ -204,6 +207,7 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
     
     for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
+        // can cause problems with periodic words
         double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2] / wordLength);
         double conjFactor;
         if (checkPalindromes)
@@ -254,6 +258,11 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         
         cout << "took " << seconds << " seconds" << endl;
     }
+    
+    double totalTime2 = get_wall_time();
+    double totalSeconds = totalTime2 - totalTime1;
+    
+    cout << "Total time is " << totalSeconds << endl;
 }
 
 void checkAtRandom(int wordLength, int numTries, bool checkPalindromes)
@@ -301,7 +310,7 @@ int main()
     bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 30, checkPalindromes);
+    checkBruteforce(2, 24, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     
