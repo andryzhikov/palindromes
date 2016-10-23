@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
-#include <sys/time.h>
 using namespace std;
 
 template <typename T>
@@ -39,8 +38,8 @@ int findMaxAntiPalindrome(const vector<bool> & word)
     doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     
-    for (int i = 0; i < doubledWord.size() - 1; i++)
-        maxPal[i][i + 1] = 0;
+    for (int i = 1; i < doubledWord.size(); i++)
+        maxPal[i][i - 1] = 0;
     
     for (int i = 0; i < doubledWord.size(); i++)
     {
@@ -78,8 +77,8 @@ int findMaxPalindrome(const vector<bool> & word)
     doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     doubledWord.insert(doubledWord.end(), word.begin(), word.end());
     
-    for (int i = 0; i < doubledWord.size() - 1; i++)
-        maxPal[i][i + 1] = 0;
+    for (int i = 1; i < doubledWord.size(); i++)
+        maxPal[i][i - 1] = 0;
     
     for (int i = 0; i < doubledWord.size(); i++)
     {
@@ -173,7 +172,7 @@ inline bool lexicographicalCompare(bIter first1, bIter last1,
               return false;
       }
       // the word is periodic
-      // a periodic word can not be a minimum counterexample
+      // a periodic word can not be a minimum counterexample -- return false
       // (for both palindromes and antipalindromes)
       // but causes problems with estimation
       return true;
@@ -208,7 +207,7 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
     for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
         // can cause problems with periodic words
-        double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2] / wordLength);
+        double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2]) / wordLength;
         double conjFactor;
         if (checkPalindromes)
             conjFactor = (double)3/4;
@@ -237,9 +236,11 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
             word[iLetter] = 1;
         }
         
+//        int numLyndonWords = 0;
         do {
             if (theWordIsTheLeast(word))
             {
+//                numLyndonWords++;
                 int palindromeLength;
                 
                 if (checkPalindromes)
@@ -257,6 +258,8 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
         double seconds = time2 - time1;
         
         cout << "took " << seconds << " seconds" << endl;
+//        cout << numLyndonWords << " Lyndon words" << endl;
+        
     }
     
     double totalTime2 = get_wall_time();
@@ -307,10 +310,10 @@ int main()
 {
     initDPArray();
     
-    bool checkPalindromes = false;
+    bool checkPalindromes = true;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 24, checkPalindromes);
+    checkBruteforce(2, 28, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     
