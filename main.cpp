@@ -32,6 +32,67 @@ void deleteDPArray()
     delete[] maxPal;
 }
 
+int longestCommonSubseq(const vector<bool> & word1, const vector<bool> & word2)
+{
+    if (word1[0] == word2[0])
+        maxPal[0][0] = 1;
+    else
+        maxPal[0][0] = 0;
+    
+    for (int i = 1; i < word1.size(); i++)
+    {
+        if (word1[i] == word2[0])
+            maxPal[i][0] = 1;
+        else
+            maxPal[i][0] = maxPal[i - 1][0];
+    }
+    
+    for (int j = 1; j < word2.size(); j++)
+    {
+        if (word1[0] == word2[j])
+            maxPal[0][j] = 1;
+        else
+            maxPal[0][j] = maxPal[0][j - 1];
+    }
+    
+    for (int sum = 2; sum < word1.size() + word2.size() - 1; sum++)
+    {
+        int minI = max(1, sum - (int)word2.size() + 1);
+        for (int i = minI; i < word1.size(); i++)
+        {
+            int j = sum - i;
+            if (j < 1)
+                break;
+            if (word1[i] == word2[j])
+                maxPal[i][j] = maxPal[i - 1][j - 1] + 1;
+            else
+                maxPal[i][j] = max(maxPal[i - 1][j], maxPal[i][j - 1]);
+        }
+    }
+    
+    return maxPal[word1.size() - 1][word2.size() - 1];
+}
+
+int findMaxSquareSubsequence(const vector<bool> & word, bool inverse)
+{
+    int maxSquareLength = 0;
+    for (int iMiddle = 1; iMiddle < word.size() - 1; iMiddle++)
+    {
+        vector<bool> part1(word.begin(), word.begin() + iMiddle),
+                part2(word.begin() + iMiddle, word.end());
+        if (inverse)
+        {
+            for (int i = 0; i < part2.size(); i++)
+            {
+                part2[i] = 1 - part2[i];
+            }
+        }
+        maxSquareLength = max(maxSquareLength, longestCommonSubseq(part1, part2));
+    }
+    
+    return 2 * maxSquareLength;
+}
+
 int findMaxAntiPalindrome(const vector<bool> & word)
 {
     vector<bool> doubledWord;
@@ -207,20 +268,20 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
     for (int wordLength = minLength; wordLength <= maxLength; wordLength += 2)
     {
         // can cause problems with periodic words
-        double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2]) / wordLength;
-        double conjFactor;
-        if (checkPalindromes)
-            conjFactor = (double)3/4;
-        else
-            conjFactor = (double)2/3;
+//        double estimatedMinPalLength = ((double)minPalForLength[(wordLength - minLength) / 2]) / wordLength;
+//        double conjFactor;
+//        if (checkPalindromes)
+//            conjFactor = (double)3/4;
+//        else
+//            conjFactor = (double)2/3;
         
-        if (estimatedMinPalLength >= conjFactor)
-        {
-            cout << wordLength << " skipped with factor at least" << " " 
-                 << (double)minPalForLength[(wordLength - minLength) / 2] / wordLength << endl;
-            minPalForLength.push_back(minPalForLength[(wordLength - minLength) / 2]);
-            continue;
-        }
+//        if (estimatedMinPalLength >= conjFactor)
+//        {
+//            cout << wordLength << " skipped with factor at least" << " " 
+//                 << (double)minPalForLength[(wordLength - minLength) / 2] / wordLength << endl;
+//            minPalForLength.push_back(minPalForLength[(wordLength - minLength) / 2]);
+//            continue;
+//        }
         
         double time1 = get_wall_time();
         
@@ -243,14 +304,50 @@ void checkBruteforce(int minLength, int maxLength, bool checkPalindromes)
 //                numLyndonWords++;
                 int palindromeLength;
                 
+                // is max-of-two true for linear words?
                 if (checkPalindromes)
                     palindromeLength = findMaxPalindrome(word);
                 else
                     palindromeLength = findMaxAntiPalindrome(word);
                 
+                // bound is achieved at the same time?
+//                int palindromeLength1 = findMaxPalindrome(word);
+//                int palindromeLength2 = findMaxAntiPalindrome(word);
+//                palindromeLength = max(palindromeLength1, palindromeLength2);
+                
                 minPalLength = min(minPalLength, palindromeLength);
             }
         } while (next_permutation(word.begin(), word.end()));
+        
+//        do {
+//            //if (theWordIsTheLeast(word))
+//            {
+//                //                numLyndonWords++;
+//                int squareLength = 0;
+                
+////                int a1 = 0, a2 = 0;
+//                //for (int shift = 1; shift < word.size() + 1; shift++)
+//                {
+//                    //works for linear words!
+//                    squareLength = max(squareLength, findMaxSquareSubsequence(word, true));
+//                    squareLength = max(squareLength, findMaxSquareSubsequence(word, false));
+                    
+////                    a1 = max(a1, findMaxSquareSubsequence(word, true));
+////                    a2 = max(a2, findMaxSquareSubsequence(word, false));
+                    
+//                    //rotate(word.begin(), word.begin() + 1, word.end());
+//                }
+                
+////                if (((double)a1 / word.size() <= 0.667)
+////                        && ((double)a2 / word.size() <= 0.667))
+////                {
+////                    cout << a1 << " " << a2 << " " << word << endl;
+////                    //exit(0);
+////                }
+                
+//                minPalLength = min(minPalLength, squareLength);
+//            }
+//        } while (next_permutation(word.begin(), word.end()));
         
         minPalForLength.push_back(minPalLength);
         cout << wordLength << " " << (double)minPalLength / word.size() << " " << minPalLength << endl;
@@ -310,10 +407,10 @@ int main()
 {
     initDPArray();
     
-    bool checkPalindromes = true;
+    bool checkPalindromes = false;
     cout << "checkPalindromes = " << checkPalindromes << endl;
     
-    checkBruteforce(2, 28, checkPalindromes);
+    checkBruteforce(2, 36, checkPalindromes);
     
     //checkAtRandom(100, 10000, checkPalindromes);
     
