@@ -16,7 +16,8 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v)
 //  Windows
 #ifdef _WIN32
 #include <Windows.h>
-double get_wall_time(){
+double get_wall_time()
+{
     LARGE_INTEGER time,freq;
     if (!QueryPerformanceFrequency(&freq)){
         //  Handle error
@@ -28,7 +29,8 @@ double get_wall_time(){
     }
     return (double)time.QuadPart / freq.QuadPart;
 }
-double get_cpu_time(){
+double get_cpu_time()
+{
     FILETIME a,b,c,d;
     if (GetProcessTimes(GetCurrentProcess(),&a,&b,&c,&d) != 0){
         //  Returns total user time.
@@ -36,7 +38,9 @@ double get_cpu_time(){
         return
             (double)(d.dwLowDateTime |
             ((unsigned long long)d.dwHighDateTime << 32)) * 0.0000001;
-    }else{
+    }
+    else
+    {
         //  Handle error
         return 0;
     }
@@ -46,15 +50,18 @@ double get_cpu_time(){
 #else
 #include <time.h>
 #include <sys/time.h>
-double get_wall_time(){
+double get_wall_time()
+{
     struct timeval time;
-    if (gettimeofday(&time,NULL)){
+    if (gettimeofday(&time,NULL))
+    {
         //  Handle error
         return 0;
     }
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
-double get_cpu_time(){
+double get_cpu_time()
+{
     return (double)clock() / CLOCKS_PER_SEC;
 }
 #endif
