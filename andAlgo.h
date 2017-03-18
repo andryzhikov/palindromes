@@ -9,10 +9,16 @@ void initDPArray(int maxWordLength);
 void deleteDPArray(int maxWordLength);
 
 // main algorithms for conjectures checking
-int findMaxSquareSubsequence(const vector<bool> & word, bool inverse);
-int findMaxPalindrome(const vector<bool> & word, bool checkPalindrome);
 
-int longestCommonSubseq(const vector<bool> & word1, const vector<bool> & word2);
+// circular case
+int findMaxSquareSubsequence(const vector<bool> & word, bool inverse);
+int findMaxPalindromicSubseqCirc(const vector<bool> & word);
+int findMaxPalindromicSubseqCircStrong(const vector<bool> & word);
+int findMaxAntiPalindromicSubseqCirc(const vector<bool> & word);
+
+//linear case
+int findMaxPalindromicSubseq(const vector<bool> & word1);
+int findMaxCommonSubseq(const vector<bool> & word1, const vector<bool> & word2);
 
 // functions for working with cyclic word
 typedef vector<bool>::const_iterator bIter;
